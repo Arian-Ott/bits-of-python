@@ -1,6 +1,7 @@
 from typing import Iterable, Union
 import ctypes
 import os
+
 Number = Union[int, float]
 
 
