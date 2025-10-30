@@ -10,8 +10,8 @@ from vector import Vector, CVector
 # ============================================================
 #  CONFIGURATION
 # ============================================================
-TARGET_REL_HALF_WIDTH = 0.05   # ±5% confidence interval target
-CONFIDENCE_Z = 1.96            # 95% confidence
+TARGET_REL_HALF_WIDTH = 0.05  # ±5% confidence interval target
+CONFIDENCE_Z = 1.96  # 95% confidence
 MIN_RUNS = 10
 MAX_RUNS = 50
 WARMUPS = 3
@@ -37,7 +37,14 @@ def time_once(func, *args):
     return (t2 - t1) / 1e6  # ms
 
 
-def measure_until_precise(func, *args, warmups=WARMUPS, min_runs=MIN_RUNS, max_runs=MAX_RUNS, rel_halfwidth=TARGET_REL_HALF_WIDTH):
+def measure_until_precise(
+    func,
+    *args,
+    warmups=WARMUPS,
+    min_runs=MIN_RUNS,
+    max_runs=MAX_RUNS,
+    rel_halfwidth=TARGET_REL_HALF_WIDTH,
+):
     """Run until mean runtime has ±rel_halfwidth CI or max_runs reached."""
     # Warm-up
     for _ in range(warmups):
@@ -51,7 +58,7 @@ def measure_until_precise(func, *args, warmups=WARMUPS, min_runs=MIN_RUNS, max_r
             continue
         mean = statistics.fmean(samples)
         sd = statistics.pstdev(samples) if n > 1 else 0.0
-        halfwidth = CONFIDENCE_Z * sd / (n ** 0.5)
+        halfwidth = CONFIDENCE_Z * sd / (n**0.5)
         if mean > 0 and (halfwidth / mean) <= rel_halfwidth:
             break
         if n >= max_runs:
@@ -76,7 +83,9 @@ def benchmark_single_size(n: int):
         raise AssertionError("Dot product mismatch!")
 
     # Measure all methods adaptively
-    numpy_samples, numpy_mean, numpy_sd, numpy_hw = measure_until_precise(np.dot, np_a, np_b)
+    numpy_samples, numpy_mean, numpy_sd, numpy_hw = measure_until_precise(
+        np.dot, np_a, np_b
+    )
     c_samples, c_mean, c_sd, c_hw = measure_until_precise(lambda: cv1 * cv2)
     py_samples, py_mean, py_sd, py_hw = measure_until_precise(lambda: v1 * v2)
 
@@ -107,11 +116,11 @@ def main():
         f"Platform: {platform.system()} {platform.release()} ({platform.machine()})\n"
         f"CPU: {platform.processor()}\n"
         f"Total RAM: {round(psutil.virtual_memory().total / 1e9, 2)} GB\n"
-        f"Target CI precision: ±{int(TARGET_REL_HALF_WIDTH*100)}%\n"
+        f"Target CI precision: ±{int(TARGET_REL_HALF_WIDTH * 100)}%\n"
         f"Confidence level: 95%\n"
         f"Min runs: {MIN_RUNS}, Max runs: {MAX_RUNS}, Warmups: {WARMUPS}\n"
         f"Vector sizes: {VECTOR_SIZES}\n"
-        f"{'-'*90}\n"
+        f"{'-' * 90}\n"
     )
 
     results = []
@@ -132,9 +141,9 @@ def main():
                 f"  NumPy   : {res['numpy_mean']:.3f} ± {res['numpy_hw']:.3f} ms (n={res['numpy_n']})\n"
                 f"  CVector : {res['c_mean']:.3f} ± {res['c_hw']:.3f} ms (n={res['c_n']})\n"
                 f"  Vector  : {res['py_mean']:.3f} ± {res['py_hw']:.3f} ms (n={res['py_n']})\n"
-                f"  Speedup (Vector/CVector): {res['py_mean']/res['c_mean']:.1f}×\n"
-                f"  Speedup (NumPy/CVector) : {res['numpy_mean']/res['c_mean']:.2f}×\n"
-                f"{'-'*90}\n"
+                f"  Speedup (Vector/CVector): {res['py_mean'] / res['c_mean']:.1f}×\n"
+                f"  Speedup (NumPy/CVector) : {res['numpy_mean'] / res['c_mean']:.2f}×\n"
+                f"{'-' * 90}\n"
             )
             print(line)
             f.write(line)
